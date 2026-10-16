@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%A5%B3%3C/text%3E%3C/svg%3E">
+<title>今天吃什么</title>
+<style>
+:root {
+  --bg: #FAF8F5;
+  --card: #FFFFFF;
+  --ink: #2B2724;
+  --ink-2: #6B6259;
+  --ink-3: #9C9188;
+  --line: #E8E1D8;
+  --brand: #C25B2E;
+  --brand-soft: #FBEEE6;
+  --green: #4A7C42;
+  --green-soft: #EDF5EA;
+  --amber: #B07D22;
+  --amber-soft: #FCF4E3;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; }
+h1 { font-size: 22px; letter-spacing: -0.3px; }
+p { margin: 0; }
+button { font-family: inherit; font-size: inherit; cursor: pointer; }
+
+/* ---------- 头部 ---------- */
+.hd {
+  padding: 20px 18px 12px;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 20;
+}
+.hd-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.sub { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+
+.icon-btn {
+  border: none; background: transparent; font-size: 20px; line-height: 1;
+  color: var(--ink-3); padding: 6px 8px; border-radius: 8px;
+  min-width: 32px; min-height: 32px;
+}
+.icon-btn:hover { background: var(--brand-soft); }
+.icon-btn.on { color: var(--brand); }
+.icon-btn.subtle { font-size: 16px; color: var(--ink-3); }
+
+.detail-hd { border-bottom: 1px solid var(--line); }
+.detail-hd .hd-row { align-items: center; }
+.detail-hd h1 { font-size: 18px; flex: 1; }
+.detail-meta {
+  font-size: 13px; color: var(--ink-3); padding: 6px 18px 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.dot { opacity: 0.5; }
+
+/* ---------- 已选食材 ---------- */
+.picked-bar {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 4px 18px 10px;
+  min-height: 34px; align-items: center;
+}
+.hint { font-size: 13px; color: var(--ink-3); }
+
+.chip {
+  border: 1px solid var(--line); background: var(--card);
+  color: var(--ink-2); border-radius: 999px;
+  padding: 5px 12px; font-size: 13px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chip:hover { border-color: var(--brand); color: var(--brand); }
+.chip-on {
+  background: var(--brand); color: #fff; border-color: var(--brand);
+}
+.chip-on:hover { background: #a84d25; color: #fff; }
+.chip-on span { opacity: .7; margin-left: 2px; }
+.chip-ban { background: #8A8A8A; color: #fff; border-color: #8A8A8A; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.quick-add { display: flex; gap: 8px; padding: 0 18px 12px; }
+
+.btn-primary {
+  flex: 1; border: none; background: var(--brand); color: #fff;
+  border-radius: 10px; padding: 11px 16px; font-weight: 500; font-size: 15px;
+}
+.btn-primary:hover { background: #a84d25; }
+.btn-ghost {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+  border-radius: 10px; padding: 11px 16px; font-size: 15px;
+}
+.btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+.btn-ghost.danger { color: #A33; border-color: #E8D0D0; }
+.btn-ghost.done { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+
+/* ---------- 标签页 ---------- */
+.tabs {
+  display: flex; gap: 2px; padding: 0 14px;
+  border-bottom: 1px solid var(--line); margin-bottom: 10px;
+}
+.tab {
+  border: none; background: transparent; color: var(--ink-3);
+  padding: 9px 12px; font-size: 14px; position: relative;
+  display: flex; align-items: center; gap: 5px;
+}
+.tab.on { color: var(--ink); font-weight: 500; }
+.tab.on::after {
+  content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px;
+  height: 2px; background: var(--brand); border-radius: 2px;
+}
+.tab-n {
+  font-size: 11px; background: var(--line); color: var(--ink-2);
+  border-radius: 999px; padding: 1px 6px; min-width: 18px; text-align: center;
+}
+.tab.on .tab-n { background: var(--brand-soft); color: var(--brand); }
+
+/* ---------- 列表 ---------- */
+.list { padding: 0 14px; }
+.spacer { height: 72px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 13px 14px;
+  margin-bottom: 9px; display: flex; align-items: flex-start; gap: 8px;
+  cursor: pointer; transition: border-color .15s, transform .08s;
+}
+.card:hover { border-color: #D5C9BC; }
+.card:active { transform: scale(.995); }
+.card.ready { border-left: 3px solid var(--green); }
+.card.close { border-left: 3px solid var(--amber); }
+.card.no { opacity: .72; }
+
+.card-main { flex: 1; min-width: 0; }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.card h3 { font-size: 15.5px; font-weight: 500; line-height: 1.4; }
+
+.badge {
+  font-size: 11px; padding: 2px 7px; border-radius: 6px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+}
+.badge-ready { background: var(--green-soft); color: var(--green); }
+.badge-close { background: var(--amber-soft); color: var(--amber); }
+.badge-no { background: #F0EDE9; color: var(--ink-3); }
+
+.card-meta {
+  font-size: 12.5px; color: var(--ink-3); margin-top: 4px;
+  display: flex; align-items: center; gap: 5px;
+}
+.card-miss { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+.card-miss i {
+  font-style: normal; background: var(--amber-soft); color: var(--amber);
+  padding: 1px 6px; border-radius: 5px; margin-right: 4px; font-size: 12px;
+}
+.card-tags { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+.tag { font-size: 11px; color: var(--ink-3); background: #F2EFEB; padding: 1px 7px; border-radius: 5px; }
+
+.fav {
+  border: none; background: transparent; color: #D8D0C7;
+  font-size: 17px; padding: 2px 4px; flex-shrink: 0; line-height: 1;
+}
+.fav.on { color: var(--brand); }
+.fav:hover { color: var(--brand); }
+
+.empty { text-align: center; padding: 60px 30px; }
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+.empty h3 { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.empty p { font-size: 13.5px; color: var(--ink-3); }
+
+/* ---------- 详情区块 ---------- */
+.block {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px;
+  margin: 10px 14px 0;
+}
+.block-hd { font-size: 13px; color: var(--ink-3); font-weight: 500; margin-bottom: 10px; }
+.ing-list { display: flex; flex-direction: column; gap: 2px; }
+.ing-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 2px; font-size: 14.5px;
+}
+.ing-row .mark {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--line); color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+}
+.ing-row.have .mark { background: var(--green); border-color: var(--green); color: #fff; }
+.ing-row.have .ing-name { font-weight: 500; }
+.ing-row.opt .mark, .ing-row.pantry .mark { border-color: transparent; }
+.ing-row.opt .ing-name, .ing-row.pantry .ing-name { color: var(--ink-2); font-size: 13.5px; }
+.ing-sub {
+  font-size: 12px; color: var(--ink-3); margin-top: 8px;
+  padding-top: 8px; border-top: 1px dashed var(--line);
+}
+
+/* ---------- 步骤 ---------- */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 11px; }
+.step-n {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--brand-soft); color: var(--brand);
+  font-size: 12.5px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step-body { flex: 1; min-width: 0; }
+.step-body p { font-size: 14.5px; line-height: 1.65; }
+.timer-btn {
+  margin-top: 7px; border: 1px solid var(--brand); color: var(--brand);
+  background: transparent; border-radius: 8px; padding: 4px 10px; font-size: 13px;
+}
+.timer-btn:hover { background: var(--brand-soft); }
+
+.detail-acts { padding: 14px; }
+
+/* ---------- 计时条 ---------- */
+.timer-bar {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: 84px; z-index: 60;
+  background: var(--ink); color: #fff;
+  border-radius: 999px; padding: 8px 8px 8px 16px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.2);
+  max-width: calc(100vw - 32px);
+  white-space: nowrap;
+}
+.timer-label { font-size: 12px; opacity: .7; flex-shrink: 0; }
+.timer-num {
+  font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 500;
+  letter-spacing: .5px; min-width: 52px; flex-shrink: 0;
+}
+.btn-timer-stop {
+  border: none; background: rgba(255,255,255,.16); color: #fff;
+  border-radius: 999px; padding: 5px 12px; font-size: 12.5px;
+  flex-shrink: 0; white-space: nowrap;
+}
+
+/* ---------- 底部导航 ---------- */
+.bottom {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 520px; z-index: 40;
+  background: rgba(250,248,245,.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bn {
+  border: none; background: transparent; padding: 9px 0 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--ink-3);
+}
+.bn span { font-size: 18px; line-height: 1; }
+.bn.on { color: var(--brand); }
+
+/* ---------- 弹层 ---------- */
+.modal { position: fixed; inset: 0; z-index: 100; }
+.modal-mask { position: absolute; inset: 0; background: rgba(30,25,20,.4); }
+.modal-body {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 0; width: 100%; max-width: 520px;
+  background: var(--bg); border-radius: 18px 18px 0 0;
+  max-height: 82vh; overflow-y: auto;
+  padding-bottom: 20px;
+}
+.modal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 10px; position: sticky; top: 0;
+  background: var(--bg); z-index: 2;
+}
+.modal-hd h2 { font-size: 17px; }
+
+.search-wrap { padding: 0 18px 12px; }
+#ing-search {
+  width: 100%; border: 1px solid var(--line); background: var(--card);
+  border-radius: 10px; padding: 10px 13px; font-size: 15px;
+  font-family: inherit; color: var(--ink);
+}
+#ing-search:focus { outline: none; border-color: var(--brand); }
+
+.ing-group { padding: 0 18px 12px; }
+.ing-group h4 {
+  font-size: 12px; color: var(--ink-3); font-weight: 500; margin-bottom: 8px;
+}
+
+/* ---------- 厨房设置 ---------- */
+.tool-row {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 0; border-bottom: 1px solid var(--line); cursor: pointer;
+}
+.tool-row:last-of-type { border-bottom: none; }
+.tool-row input { width: 20px; height: 20px; accent-color: var(--brand); flex-shrink: 0; }
+.tool-name { flex: 1; font-size: 15px; }
+.tool-hint { font-size: 12.5px; color: var(--ink-3); }
+.note { font-size: 12.5px; color: var(--ink-3); margin-top: 10px; line-height: 1.5; }
+.data-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.data-acts .btn-ghost { font-size: 14px; padding: 9px 14px; }
+
+.stat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat {
+  background: var(--bg); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.stat-n { font-size: 18px; font-weight: 600; color: var(--brand); }
+.stat-l { font-size: 12.5px; color: var(--ink-2); }
+
+/* ---------- 首页主推卡（打开就有答案） ---------- */
+.hero {
+  background: linear-gradient(160deg, #FFF9F4 0%, #FBEEE6 100%);
+  border: 1px solid #EFD9C9;
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  margin: 0 14px 16px;
+}
+.hero-label {
+  font-size: 11.5px; color: var(--brand); letter-spacing: 1px;
+  text-transform: none; font-weight: 500;
+}
+.hero-name {
+  font-size: 25px; font-weight: 600; line-height: 1.3;
+  margin: 4px 0 8px; letter-spacing: -0.4px;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink-2); flex-wrap: wrap;
+}
+.hero-miss { font-size: 13px; color: var(--ink-2); margin-top: 8px; }
+.hero-miss i {
+  font-style: normal; background: #fff; color: var(--amber);
+  padding: 1px 7px; border-radius: 6px; margin-right: 4px;
+  border: 1px solid #EDD9B0;
+}
+.hero-acts { display: flex; gap: 8px; margin-top: 14px; }
+.hero-acts .btn-primary { flex: 1.4; }
+.hero-acts .btn-ghost { flex: 1; }
+
+/* ---------- 快捷选择区 ---------- */
+.sec { padding: 0 14px 4px; }
+.sec-hd {
+  font-size: 13px; color: var(--ink-3); font-weight: 500;
+  margin-bottom: 9px; display: flex; align-items: baseline; gap: 5px;
+}
+.sec-hd span { font-size: 12px; }
+.quick-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+  margin-bottom: 16px;
+}
+.quick-card {
+  border: 1px solid var(--line); background: var(--card);
+  border-radius: 12px; padding: 11px 12px; text-align: left;
+  display: flex; flex-direction: column; gap: 3px;
+  transition: border-color .15s, background .15s;
+}
+.quick-card:hover { border-color: var(--brand); background: #FFFCFA; }
+.quick-card:active { transform: scale(.985); }
+.quick-name {
+  font-size: 14.5px; font-weight: 500; color: var(--ink);
+  line-height: 1.35; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.quick-meta { font-size: 12px; color: var(--ink-3); }
+
+/* ---------- 缺料提示条 ---------- */
+.alert {
+  background: var(--amber-soft); color: var(--amber);
+  margin: 0 14px 10px; padding: 9px 12px;
+  border-radius: 10px; font-size: 13.5px;
+}
+.alert i {
+  font-style: normal; background: #fff; padding: 1px 7px;
+  border-radius: 5px; margin: 0 3px;
+}
+
+/* ---------- 开始做按钮 ---------- */
+.detail-start { padding: 0 14px 4px; }
+
+/* ---------- 做菜模式（一步一屏） ---------- */
+.cook {
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  background: var(--bg);
+}
+.cook-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 12px 8px;
+}
+.cook-title {
+  flex: 1; font-size: 15px; font-weight: 500; text-align: center;
+  color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cook-prog {
+  display: flex; gap: 4px; padding: 0 20px 0;
+  justify-content: center;
+}
+.cook-prog .dot {
+  width: 100%; max-width: 40px; height: 3px;
+  background: var(--line); border-radius: 2px;
+  transition: background .2s;
+}
+.cook-prog .dot.on { background: var(--brand); }
+
+.cook-body {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: flex-start; align-items: center;
+  padding: 8vh 26px 20px; text-align: center;
+  overflow-y: auto;
+}
+.cook-step-n {
+  font-size: 13px; color: var(--ink-3); margin-bottom: 14px;
+}
+.cook-step {
+  font-size: 24px; line-height: 1.62; font-weight: 500;
+  letter-spacing: -0.2px; max-width: 500px;
+}
+.btn-timer-lg {
+  margin-top: 26px; border: none;
+  background: var(--brand); color: #fff;
+  border-radius: 999px; padding: 15px 28px;
+  font-size: 17px; font-weight: 500;
+  box-shadow: 0 4px 14px rgba(194,91,46,.28);
+}
+.btn-timer-lg:active { transform: scale(.97); }
+
+.cook-acts {
+  display: flex; gap: 10px; padding: 0 16px 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.btn-step-prev, .btn-step-next {
+  border: none; border-radius: 14px;
+  padding: 17px 20px; font-size: 17px; font-weight: 500;
+}
+.btn-step-prev {
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--line); flex: 1;
+}
+.btn-step-next {
+  background: var(--brand); color: #fff; flex: 2;
+  box-shadow: 0 4px 14px rgba(194,91,46,.25);
+}
+.btn-step-next.done { background: var(--green); box-shadow: 0 4px 14px rgba(74,124,66,.25); }
+.btn-step-prev:active, .btn-step-next:active { transform: scale(.98); }
+
+/* ---------- 通用 ---------- */
+.btn-lg { padding: 13px 18px; font-size: 16px; border-radius: 12px; }
+.cooked-n { color: var(--green); }
+
+@media (max-width: 360px) {
+  h1 { font-size: 20px; }
+  .card h3 { font-size: 15px; }
+  .hero-name { font-size: 22px; }
+  .cook-step { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const TOOLS = {
+  microwave: '微波炉',
+  rice: '电饭煲',
+  pot: '电煮锅',
+  oven: '烤箱'
+};
+
+/** 常用调味品，默认视为已有，不参与食材匹配 */
+const PANTRY = [
+  '盐', '食用油', '生抽', '老抽', '蚝油', '料酒', '醋', '白糖',
+  '淀粉', '胡椒粉', '花椒', '辣椒', '姜', '蒜', '葱', '香菜', '白芝麻'
+];
+
+// ====================== 【重要配置】修改为你自己 recipes.json 的公开直链 ======================
+// 示例：const RECIPES_JSON_URL = "https://zhangsan.github.io/my-cook-book/recipes.json";
+const RECIPES_JSON_URL = "在这里填入你上传后的recipes.json网络地址";
+
+// 离线兜底菜谱（网络异常时自动使用，内容和recipes.json保持一致）
+const FALLBACK_RECIPES = [{"id":"rice-01","name":"电饭煲鸡蛋炒饭","tools":["rice"],"ing":["剩米饭","鸡蛋","胡萝卜"],"opt":["葱"],"pantry":["盐","食用油","生抽","胡椒粉","蚝油"],"time":18,"tags":["主食","电饭煲","快手","一锅出"],"steps":["剩饭用手抓散，米粒分开不结团（这步决定成品干散）","胡萝卜切小丁，鸡蛋打散","内胆放少量油，油温六成热倒蛋液，凝固后划散盛出","原锅下胡萝卜丁炒 2 分钟至变软","倒入米饭，中小火不停翻压 3 分钟，让每粒米裹上蛋和油","倒回鸡蛋，加生抽、蚝油、盐、胡椒粉炒匀","出锅撒葱花。想更香可以先放半勺油焖 5 分钟再炒"]},{"id":"rice-02","name":"电饭煲香菇滑鸡饭","tools":["rice"],"ing":["大米","鸡腿肉","香菇"],"opt":["生姜","青葱"],"pantry":["生抽","蚝油","料酒","淀粉","盐"],"time":45,"tags":["主食","电饭煲","一锅出"],"steps":["鸡腿肉切块，冷水下锅加姜片料酒焯 3 分钟，捞出冲净","香菇泡发切片，泡菇水留着（是高汤，別倒）","鸡肉加生抽、蚝油、料酒、淀粉抓匀，腌 20 分钟","米淘好加水，水量比平时少 1 汤匙（鸡肉会出水）","依次铺入鸡肉和香菇，按煮饭键","跳闸后开盖铺上葱花，淋 2 勺泡菇水，拌匀焖 5 分钟"]},{"id":"rice-03","name":"电饭煲腊肠煲仔饭","tools":["rice"],"ing":["大米","腊肠","鸡蛋","青菜"],"opt":["生姜"],"pantry":["生抽","蚝油","白糖","食用油"],"time":40,"tags":["主食","电饭煲","广式"],"steps":["腊肠斜切薄片，青菜洗净掰开，鸡蛋打散","米淘净加水，按煮饭键，煮到跳闸先不开盖","开盖，米面铺腊肠片，沿锅边淋一圈油，盖上再按一次煮饭","跳闸后把鸡蛋液淋在饭上（会滋滋响），铺青菜","按一次煮饭键 3 分钟后取出","生抽+蚝油+白糖+2 勺煮饭水调成酱汁，浇在饭上拌开"]},{"id":"rice-04","name":"电饭煲番茄鸡蛋焖饭","tools":["rice"],"ing":["大米","番茄","鸡蛋"],"opt":[],"pantry":["盐","食用油","生抽","白糖"],"time":35,"tags":["主食","电饭煲","一锅出"],"steps":["番茄顶部划十字，开水烫 1 分钟去皮，切小块","锅里少油（电饭煲内胆不粘可不放油），倒入番茄块","开火/直接用煮饭键先加热，把番茄炒到出汁变软","加生抽、白糖、少许盐炒匀，这就是番茄酱汁","倒入淘好的米和适量水，铺上打散的蛋液","按煮饭键，跳焖 10 分钟后翻拌均匀，撒葱花"]},{"id":"rice-05","name":"电饭煲皮蛋瘦肉粥","tools":["rice"],"ing":["大米","皮蛋","猪瘦肉"],"opt":["葱","香菜"],"pantry":["盐","胡椒粉","料酒","淀粉"],"time":60,"tags":["粥","电饭煲","早餐"],"steps":["大米洗净，加几滴油和一点盐拌匀，冷冻 2 小时（更容易开花）","瘦肉切丝，加料酒、淀粉、少许盐抓匀腌 15 分钟","皮蛋切丁，一半留着最后放","米加水（水米比约 12:1）入煲，加姜丝，按煮饭键","跳闸后加肉丝和一半皮蛋丁，继续按煮饭键 15 分钟","肉熟后放剩余皮蛋，调盐和白胡椒粉，撒葱花香菜"]},{"id":"rice-06","name":"电饭煲玉米胡萝卜排骨汤","tools":["rice"],"ing":["排骨","玉米","胡萝卜"],"opt":[],"pantry":["盐","料酒"],"time":70,"tags":["汤","电饭煲"],"steps":["排骨冷水下锅，加姜片和料酒，煮开撇净浮沫后捞出冲净","玉米切段，胡萝卜滚刀切块","所有材料入煲，加水没过食材 2 指，按煮饭键","跳闸后加盐调味，再焖 10 分钟出味"]},{"id":"rice-07","name":"电饭煲南瓜小米粥","tools":["rice"],"ing":["小米","南瓜"],"opt":[],"pantry":["白糖"],"time":35,"tags":["粥","电饭煲","素","早餐"],"steps":["小米洗净，南瓜去皮切小块","材料一起入煲，加水（水略多于米）","按煮饭键，中途开盖搅 1-2 次防粘底","南瓜能用勺子压碎就是好了，加糖调味"]},{"id":"rice-08","name":"电饭煲山药排骨汤","tools":["rice"],"ing":["排骨","山药"],"opt":[],"pantry":["盐","料酒"],"time":70,"tags":["汤","电饭煲"],"steps":["排骨焯水去血沫，捞出冲净","山药去皮切段，泡在清水里防氧化发黑","排骨、姜、枸杞入煲加水，按煮饭键","跳闸后下山药块，再按一次煮饭键 20 分钟","出锅前加盐"]},{"id":"rice-09","name":"电饭煲蒸鸡蛋羹","tools":["rice"],"ing":["鸡蛋"],"opt":["温水"],"pantry":["盐","生抽","香油"],"time":20,"tags":["蒸","电饭煲","素","快手"],"steps":["鸡蛋打散，加 1.5 倍温水（约 40℃）和少许盐搅匀","过筛滤掉泡沫，或静置 3 分钟撇掉浮沫","盖上盘子或覆保鲜膜（扎几个孔）","入煲，水提前煮开，按煮饭键 12 分钟","出锅淋生抽和香油"]},{"id":"rice-10","name":"电饭煲蒸蛋糕","tools":["rice"],"ing":["鸡蛋","面粉"],"opt":["牛奶","白糖"],"pantry":[],"time":50,"tags":["烘焙","电饭煲","甜"],"steps":["鸡蛋分离，蛋黄蛋白放两个无水容器","蛋黄加牛奶和糖搅匀，筛入面粉，Z 字拌到无干粉","蛋白分三次加糖，打至提起有小尖角（硬性发泡）","蛋白霜分两次翻拌进蛋黄糊，动作要轻，别消泡","倒入煲内胆，震两下去大气泡","按煮饭键，跳闸后再焖 15 分钟，出炉倒扣晾凉脱模"]},{"id":"pot-01","name":"电煮锅番茄鸡蛋汤面","tools":["pot"],"ing":["面条","番茄","鸡蛋"],"opt":["青菜"],"pantry":["盐","食用油","生抽","白糖","胡椒粉"],"time":20,"tags":["面","电煮锅","快手","一锅出"],"steps":["番茄去皮切块，鸡蛋打散","锅里放油，油温不冒烟时倒蛋液，凝固后划散盛出","原锅下番茄，中火炒到出汁软烂，加白糖提鲜","加热水煮开 3 分钟，加生抽和盐调味","下面条煮至喜欢的软硬，放青菜烫软","倒回鸡蛋，撒葱花和白胡椒粉"]},{"id":"pot-02","name":"电煮锅一人食火锅","tools":["pot"],"ing":["火锅底料","娃娃菜","午餐肉","金针菇"],"opt":["豆腐","虾滑","冻豆腐"],"pantry":["盐"],"time":25,"tags":["锅","电煮锅","一人食"],"steps":["娃娃菜撕条，金针菇去根拆散，午餐肉切片","锅内水烧开，先下底料煮化（也可只放三分之一块，太咸）","先下耐煮的：豆腐、午餐肉，煮 5 分钟","再下蔬菜：金针菇、娃娃菜，煮 3-4 分钟","全部捞到碗里，原汤做蘸料：蒜末+生抽+香油+蚝油"]},{"id":"pot-03","name":"电煮锅关东煮","tools":["pot"],"ing":["萝卜","魔芋结","豆腐包","海带结"],"opt":["鱼丸","年糕","鸡蛋"],"pantry":["生抽","料酒","白糖","盐"],"time":40,"tags":["锅","电煮锅","素","暖身"],"steps":["萝卜切厚片，魔芋结和海带结冲洗干净","锅里加水，放生抽、料酒、白糖、少许盐，煮开成汤底","先下萝卜和海带，煮 15 分钟","再下魔芋结、豆腐包、鱼丸等","煮 20 分钟，关火泡 10 分钟更入味，连汤一起吃"]},{"id":"pot-04","name":"电煮锅酸辣粉","tools":["pot"],"ing":["红薯粉","花生米","香醋","辣椒油"],"opt":["青菜","葱","香菜"],"pantry":["生抽","白糖","盐","花椒"],"time":20,"tags":["面","电煮锅","快手","重口"],"steps":["红薯粉温水泡 20 分钟（软了才好吃）","碗底调料：蒜末、生抽 2 勺、香醋 3 勺、白糖、白胡椒粉","加 4 勺煮粉的热水化开，搅成酱汁","锅里水开下粉，煮 8-10 分钟到透明无白芯","捞进调好料的碗里","撒花生碎、葱花香菜，淋辣椒油"]},{"id":"pot-05","name":"电煮锅阳春面","tools":["pot"],"ing":["面条","猪油"],"opt":["青菜"],"pantry":["生抽","盐","白胡椒粉"],"time":12,"tags":["面","电煮锅","快手","素"],"steps":["碗底放猪油 1 勺、生抽 2 勺、盐、少许白胡椒粉","舀 3 勺煮面用的热汤冲进碗里，把调料化开","另起锅煮面，水开下面，煮至喜欢的软硬","捞入碗中，摆上焯好的青菜","撒大量葱花，连汤一起拌开"]},{"id":"pot-06","name":"电煮锅可乐鸡翅","tools":["pot"],"ing":["鸡翅中","可乐"],"opt":["葱"],"pantry":["生抽","料酒","白糖"],"time":30,"tags":["荤","电煮锅","零失败"],"steps":["鸡翅两面各划两刀，冷水下锅加姜片料酒焯 3 分钟捞出冲净","锅里少油，鸡翅皮朝下中火煎到两面金黄（能逼出油，成品不腻）","倒入可乐没过鸡翅，加生抽、姜片","大火烧开转中小火，盖盖炖 15 分钟","开盖大火收汁，汤汁浓稠裹在鸡翅上即可"]},{"id":"pot-07","name":"电煮锅番茄牛腩","tools":["pot"],"ing":["牛腩","番茄","洋葱"],"opt":["土豆"],"pantry":["生抽","料酒","白糖","盐","食用油"],"time":90,"tags":["荤","电煮锅","炖菜"],"steps":["牛腩切块，冷水下锅加姜片料酒焯 5 分钟，撇沫后捞出冲洗","洋葱切丝，锅中油炒香至微透明","下番茄块炒到完全软烂出沙","倒入牛腩，加生抽料酒白糖和刚好没过食材的热水","大火烧开转小火炖 60 分钟，牛腩用筷子能插透","出锅前调盐，收汁至浓稠"]},{"id":"pot-08","name":"电煮锅糖醋排骨","tools":["pot"],"ing":["排骨","香醋","白糖"],"opt":["姜","葱"],"pantry":["料酒","生抽","盐"],"time":60,"tags":["荤","电煮锅","酸甜"],"steps":["排骨剁小块，冷水下锅加姜料酒焯水，捞出冲净沥干","锅里放油，下排骨中火煎到表面微焦","加生抽、料酒炒匀上色","香醋 3 勺、白糖 2 勺、热水没过排骨","小火炖 40 分钟","开盖大火收汁，收到挂勺浓稠发亮"]},{"id":"pot-09","name":"电煮锅干锅土豆片","tools":["pot"],"ing":["土豆","五花肉","洋葱"],"opt":["干辣椒","蒜","青椒"],"pantry":["盐","生抽","豆瓣酱","食用油","白糖"],"time":25,"tags":["荤","电煮锅","下饭"],"steps":["土豆切稍厚的片，泡清水去淀粉，捞出沥干","五花肉切薄片，锅里煸出油","下豆瓣酱、干辣椒、蒜炒出红油","倒入洋葱炒软","下土豆片，中火翻炒 5 分钟至边缘微焦","加生抽、白糖、盐炒匀，出锅前撒青椒块"]},{"id":"oven-01","name":"烤箱蜜汁烤鸡翅","tools":["oven"],"ing":["鸡翅中","蜂蜜"],"opt":["蒜","姜"],"pantry":["生抽","料酒","蚝油","盐","白芝麻"],"time":45,"tags":["荤","烤箱","零失败"],"steps":["鸡翅两面划刀，冷水下锅加姜料酒焯 3 分钟，捞出擦干","蜂蜜 2 勺+生抽 2 勺+蚝油 1 勺+盐+料酒 调成腌料","鸡翅和腌料抓匀，装袋冷藏腌 2 小时以上（隔夜更好）","烤箱上下火 200℃ 预热 5 分钟","鸡翅摆烤盘，中层烤 20 分钟","取出刷一层剩余腌料，翻面再烤 10 分钟至焦糖化","出炉撒白芝麻"]},{"id":"oven-02","name":"烤箱烤鸡腿","tools":["oven"],"ing":["鸡腿"],"opt":["洋葱","蒜","土豆"],"pantry":["生抽","料酒","蚝油","盐","蜂蜜","黑胡椒"],"time":55,"tags":["荤","烤箱","宴客"],"steps":["鸡腿划几刀，用叉子扎孔帮助入味","所有调料（蜂蜜最后放）抓匀腌 3 小时","烤盘垫洋葱丝和土豆块（吸油又增香）","鸡皮朝上放烤盘，200℃ 预热后中层烤 25 分钟","翻面刷酱，再烤 20 分钟","最后 5 分钟调到 220℃ 上色，鸡皮脆响"]},{"id":"oven-03","name":"烤箱蒜香烤排骨","tools":["oven"],"ing":["排骨"],"opt":["洋葱"],"pantry":["生抽","蚝油","料酒","蜂蜜","盐","黑胡椒"],"time":60,"tags":["荤","烤箱"],"steps":["排骨切段，泡水 30 分钟去血水（这步决定成品不腥）","蒜切末，和生抽蚝油料酒蜂蜜盐黑胡椒调成酱","排骨与酱抓匀，腌 2-4 小时","烤盘铺洋葱丝，排骨平铺不要叠","210℃ 预热，中层烤 25 分钟，翻面刷酱","再烤 15-20 分钟至边缘焦香"]},{"id":"oven-04","name":"烤箱黑椒烤牛排","tools":["oven"],"ing":["牛排"],"opt":["西兰花","小番茄","黄油"],"pantry":["黑胡椒","盐","橄榄油"],"time":25,"tags":["荤","烤箱","西式"],"steps":["牛排提前 30 分钟从冰箱取出回温（这步决定口感）","厨房纸吸干表面水分，两面撒盐和黑胡椒","铸铁锅或厚底烤盘刷油烧至冒青烟（可选，先煎封汁）","放入烤盘，200℃ 中层烤 8 分钟（厚 2cm）","取出静置 5 分钟锁汁，切片","配西兰花和小番茄一起烤，最后放一块黄油增香"]},{"id":"oven-05","name":"烤箱烤时蔬","tools":["oven"],"ing":["西葫芦","彩椒","洋葱"],"opt":["小番茄","蘑菇","芦笋"],"pantry":["盐","黑胡椒","橄榄油","食用油"],"time":30,"tags":["素","烤箱","低卡","快手"],"steps":["所有蔬菜切成同样大小的块","加橄榄油、盐、黑胡椒、蒜末拌匀，让每面都挂油","烤盘铺烘焙纸（没有就刷油防粘）","蔬菜单层平铺，别叠（叠了就是蒸不是烤）","200℃ 中层烤 20 分钟，中途翻面一次","表面微焦、边缘带褐色就成了"]},{"id":"oven-06","name":"烤箱烤红薯","tools":["oven"],"ing":["红薯"],"opt":[],"pantry":[],"time":60,"tags":["素","烤箱","极简","低脂"],"steps":["红薯洗净不去皮，用叉子在表面扎几个孔","烤盘垫锡纸（流糖不粘盘），红薯直接放上","200℃ 预热后中层烤 40-60 分钟","筷子能轻松插透就是熟了","取出晾 5 分钟再掰开，会流蜜"]},{"id":"oven-07","name":"烤箱烤玉米","tools":["oven"],"ing":["玉米"],"opt":["黄油"],"pantry":["盐","黑胡椒"],"time":40,"tags":["素","烤箱","快手"],"steps":["玉米剥掉外层叶子，保留最内层薄皮包住","200℃ 中层烤 25 分钟","取出剥掉焦皮，抹黄油","撒盐和黑胡椒，再回炉 5 分钟","也可整根烤到焦香，端着啃更过瘾"]},{"id":"oven-08","name":"烤箱蛋挞","tools":["oven"],"ing":["蛋挞皮","淡奶油","牛奶","鸡蛋"],"opt":[],"pantry":["白糖"],"time":35,"tags":["烘焙","烤箱","甜"],"steps":["淡奶油+牛奶+白糖，小火加热搅到糖化，不要煮沸","稍凉后加入蛋黄拌匀","过筛两遍，去掉泡沫和蛋筋（这步决定口感细腻）","蛋挞皮不解冻，倒入蛋挞液七分满","220℃ 预热，中层烤 20 分钟至表面出现焦斑","出炉稍微放凉中心才凝固得更漂亮"]},{"id":"oven-09","name":"烤箱曲奇饼干","tools":["oven"],"ing":["黄油","面粉","鸡蛋","白糖"],"opt":["奶粉"],"pantry":[],"time":40,"tags":["烘焙","烤箱","甜"],"steps":["黄油室温软化到手指能轻松按出坑","加糖打发到颜色发白、蓬松，加蛋液搅匀","筛入面粉，用刮刀切拌到无干粉，不要画圈搅拌","装入裱花袋，挤出花形或用勺子堆成圆饼","170℃ 预热，中层烤 18-20 分钟至边缘金黄","晾凉后密封保存，回软更酥"]},{"id":"oven-10","name":"烤箱戚风蛋糕（6寸）","tools":["oven"],"ing":["鸡蛋","低筋面粉","牛奶","白糖","玉米油"],"opt":["柠檬汁"],"pantry":[],"time":70,"tags":["烘焙","烤箱","甜"],"steps":["蛋清蛋黄分离，装蛋清的盆必须无油无水","蛋黄加牛奶、玉米油搅匀，筛入低筋面粉，Z 字拌匀","蛋清加柠檬汁，分三次加糖打发至提起打蛋头有小弯钩（湿性偏干）","蛋白霜分三次翻拌进蛋黄糊，动作轻快，别消泡","倒入模具震两下，150℃ 中层烤 50 分钟","出炉立刻倒扣，完全凉透再脱模（防塌陷）"]},{"id":"mw-01","name":"微波炉蒸土豆","tools":["microwave"],"ing":["土豆"],"opt":["黄油","牛奶"],"pantry":["盐","黑胡椒"],"time":15,"tags":["素","微波炉","快手","低脂"],"steps":["土豆去皮切 1.5cm 厚的片，冲掉表面淀粉","摆盘，加两勺水盖一层保鲜膜（防干）","高火 5 分钟，取出翻面再高火 3 分钟","筷子能轻松插透即熟","压成泥，加黄油牛奶和盐黑胡椒拌匀"]},{"id":"mw-02","name":"微波炉蒸蛋羹","tools":["microwave"],"ing":["鸡蛋"],"opt":[],"pantry":["盐","生抽","香油"],"time":12,"tags":["素","微波炉","快手","低脂"],"steps":["1 个鸡蛋打散，加 1.5 倍温水（约 40℃）和盐","过筛去泡沫，这一步决定表面是否光滑","碗口覆保鲜膜扎孔，或盖一个盘子","高火 2 分钟，取出搅一下（防止中间过热结块）","再高火 1-2 分钟，晃动碗身不晃说明熟了","淋生抽和香油"]},{"id":"mw-03","name":"微波炉热米饭","tools":["microwave"],"ing":["剩米饭"],"opt":[],"pantry":[],"time":5,"tags":["主食","微波炉","极简"],"steps":["剩饭打散打松，不要结成坨","碗上盖个盘子或覆保鲜膜（防止水分蒸发变干）","高火 1 分 30 秒","中途翻拌一次，受热更均匀","没有盘子时要加两勺水，避免米饭变硬"]},{"id":"mw-04","name":"微波炉蒸南瓜","tools":["microwave"],"ing":["南瓜"],"opt":[],"pantry":["白糖","牛奶"],"time":12,"tags":["素","微波炉","快手","低卡"],"steps":["南瓜去皮去瓤，切 1.5cm 厚片摆盘","盖保鲜膜，高火 5 分钟","筷子能插透后再加 2 分钟至软糯","撒白糖，或淋牛奶"]},{"id":"mw-05","name":"微波炉热牛奶燕麦","tools":["microwave"],"ing":["燕麦片","牛奶"],"opt":["蜂蜜","香蕉"],"pantry":[],"time":5,"tags":["早餐","微波炉","极简","快手"],"steps":["燕麦倒入碗中，加牛奶没过燕麦","高火 90 秒","取出搅拌均匀，再高火 30 秒","加蜂蜜和香蕉片"]},{"id":"home-01","name":"电煮锅番茄鸡蛋盖饭","tools":["pot","rice"],"ing":["番茄","鸡蛋","大米"],"opt":["青菜"],"pantry":["盐","食用油","生抽","白糖","胡椒粉"],"time":30,"tags":["家常","电煮锅","一锅出","下饭","新手友好"],"steps":["大米淘净放电饭煲，加水按煮饭键","同时处理菜：番茄去皮切块，鸡蛋打散","电煮锅放油，油温六成热倒蛋液，凝固划散盛出","原锅下番茄中火炒 3 分钟到出汁软烂，加白糖提鲜","加生抽和盐调味，淋 3 勺热水煮开","米饭煮好后盛碗，把番茄鸡蛋浇在上面","撒葱花和胡椒粉，配一把焯好的青菜"]},{"id":"home-02","name":"电煮锅冬瓜排骨汤","tools":["pot"],"ing":["冬瓜","排骨"],"opt":["生姜"],"pantry":["盐","料酒","白胡椒粉"],"time":55,"tags":["家常","电煮锅","汤","清补"],"steps":["排骨冷水下锅，加姜片料酒，煮开撇净浮沫","捞出用温水冲洗干净（冷水会让肉发柴）","冬瓜去皮去瓤切厚块","排骨加足量热水，放进电煮锅大火烧开","转小火炖 40 分钟","下冬瓜块继续煮 10 分钟至透明","出锅前加盐和白胡椒粉"]},{"id":"home-03","name":"烤箱五花肉烤盘菜","tools":["oven"],"ing":["五花肉","土豆","洋葱"],"opt":["胡萝卜","青椒"],"pantry":["盐","黑胡椒","生抽","蚝油","蜂蜜","料酒"],"time":55,"tags":["家常","烤箱","荤","一盘出","宴客"],"steps":["五花肉切 1.5cm 厚片，土豆洋葱切滚刀块","所有食材加生抽、蚝油、料酒、蜂蜜、盐、黑胡椒抓匀","腌 30 分钟以上（时间不够味道进不去）","烤盘铺锡纸，食材平铺不要叠","200℃ 预热后中层烤 25 分钟","取出翻面刷一次腌料","再烤 15-20 分钟，五花肉边缘出焦壳就成了","配一碗白饭就是完整一餐"]},{"id":"home-04","name":"电煮锅蒜蓉鸡胸肉","tools":["pot"],"ing":["鸡胸肉","大蒜"],"opt":["西兰花"],"pantry":["盐","黑胡椒","生抽","蚝油","淀粉","料酒"],"time":20,"tags":["家常","电煮锅","荤","低脂","高蛋白","新手友好"],"steps":["鸡胸肉横刀片薄片（横切才嫩），加料酒淀粉盐抓匀腌 15 分钟","蒜切末，一半生用一半焯水用","锅里水开焯西兰花 2 分钟捞出","同锅水开下鸡胸肉片，焯到变白立刻捞出（久煮就柴）","倒掉水，锅内放油，小火炒香蒜末","倒入鸡胸肉和西兰花，大火快速翻炒 1 分钟","加生抽、蚝油、黑胡椒炒匀出锅"]},{"id":"home-05","name":"电饭煲南瓜小米粥（一人份）","tools":["rice"],"ing":["小米","南瓜"],"opt":[],"pantry":["白糖"],"time":30,"tags":["家常","电饭煲","粥","素","养胃","早餐"],"steps":["小米不用淘洗，反复洗会流失营养","南瓜去皮切小块，别切太碎会煮成泥","材料入煲加水，水面高出小米 2 指","按煮饭键，中途开盖搅 1 次防粘底","南瓜能用勺子轻松压碎就好了","按口味加糖，喜欢稀就多加水"]},{"id":"home-06","name":"烤箱蜜汁烤鸡翅（懒人版）","tools":["oven"],"ing":["鸡翅中","可乐"],"opt":[],"pantry":["生抽","蚝油","蜂蜜","料酒","盐"],"time":45,"tags":["家常","烤箱","荤","零失败","宴客","新手友好"],"steps":["鸡翅两面各划两刀，方便入味也熟得均匀","可乐半罐 + 生抽 2 勺 + 蚝油 1 勺 + 蜂蜜 1 勺 + 料酒 1 勺 + 盐","全部调料和鸡翅装密封袋，抓匀","冷藏腌 2 小时以上，隔夜最好（时间越久越入味）","烤盘垫锡纸，鸡翅摆开别叠","200℃ 预热后中层烤 20 分钟","取出翻面，刷一层剩余腌料","再烤 10 分钟至表面焦糖化、边缘微焦"]},{"id":"home-07","name":"电煮锅白菜豆腐煲","tools":["pot"],"ing":["白菜","豆腐"],"opt":["粉丝"],"pantry":["盐","生抽","蚝油","白胡椒粉","食用油"],"time":25,"tags":["家常","电煮锅","素","汤","暖身","低卡"],"steps":["白菜梗和叶分开切，豆腐切厚块","粉丝温水泡软（不想吃粉丝可跳过）","锅中放油，下白菜梗翻炒 3 分钟至变软","加 4 勺热水煮开","放入粉丝和豆腐，加生抽、蚝油调味","中火煮 10 分钟","最后放白菜叶，煮 2 分钟变软","加盐和白胡椒粉调味，连汤带菜盛出"]},{"id":"home-08","name":"微波炉蒜香烤鸡腿","tools":["microwave"],"ing":["鸡腿"],"opt":["大蒜"],"pantry":["生抽","料酒","蚝油","盐","黑胡椒"],"time":25,"tags":["家常","微波炉","荤","快手","一人食"],"steps":["鸡腿去骨划几刀，用叉子扎孔","加所有调料和大蒜末抓匀","腌 20 分钟（时间紧就抓匀直接上）","摆盘，垫几片姜去腥","覆保鲜膜扎孔，中高火 8 分钟","翻面刷酱，再中高火 6 分钟","最后高火 2 分钟收汁上色","静置 3 分钟再切，肉汁不流失"]},{"id":"home-09","name":"电饭煲一锅腊肠煲仔饭","tools":["rice"],"ing":["大米","腊肠","鸡蛋","青菜"],"opt":["胡萝卜"],"pantry":["生抽","蚝油","白糖","食用油"],"time":40,"tags":["家常","电饭煲","一锅出","广式","荤","新手友好"],"steps":["腊肠斜切薄片，青菜洗净掰小朵，胡萝卜切丝","米淘净加水，按煮饭键","跳闸后先不开盖，米面铺上腊肠片","沿锅边淋一圈油，盖盖再按一次煮饭","跳闸开盖，把打散的蛋液淋在饭上（会滋滋响）","摆上青菜和胡萝卜丝","按煮饭键 3 分钟自动跳闸","生抽+蚝油+白糖+2 勺煮饭水调成酱汁，浇上去拌开"]},{"id":"home-10","name":"电煮锅酸辣土豆丝","tools":["pot"],"ing":["土豆"],"opt":["青椒","干辣椒"],"pantry":["盐","白醋","花椒","食用油","辣椒","生抽"],"time":20,"tags":["家常","电煮锅","素","快手","下饭","低卡"],"steps":["土豆切细丝，越细越好（这是脆的关键）","切好后泡冷水 3 分钟洗掉淀粉，捞出沥干","锅里放油，小火炸香花椒，捞掉花椒粒","下干辣椒和蒜末炒香","倒入土豆丝大火快炒 2 分钟","沿锅边淋白醋（高温激发醋香，这是灵魂）","加盐、生抽炒匀，出锅前放青椒丝"]},{"id":"combo-01","name":"电饭煲 + 微波炉：一人食懒人饭","tools":["rice","microwave"],"ing":["剩米饭","鸡蛋","青菜","火腿"],"opt":["胡萝卜"],"pantry":["盐","生抽","胡椒粉","食用油"],"time":15,"tags":["主食","懒人","快手","一人食"],"steps":["青菜和胡萝卜切碎，火腿切小丁","碗里放剩米饭，蔬菜火腿铺上","打入鸡蛋，用筷子戳破蛋黄搅匀","加生抽盐胡椒粉拌匀，盖盘子","高火 3 分钟，中途翻拌一次","小心烫，拌匀开吃"]},{"id":"combo-02","name":"电饭煲 + 烤箱：烤箱焗饭","tools":["rice","oven"],"ing":["米饭","洋葱","培根","芝士"],"opt":["豌豆","玉米","番茄"],"pantry":["盐","黑胡椒","牛奶","食用油"],"time":45,"tags":["主食","烤箱","西式","宴客"],"steps":["电饭煲先把米饭煮好（可用前一晚剩饭更干爽）","锅中炒香洋葱丁，加培根丁炒出油","倒米饭炒散，加盐黑胡椒调味","装进烤盘，铺满芝士","200℃ 中层烤 15 分钟至芝士金黄起泡","淋一点热牛奶再烤 3 分钟会更湿润"]},{"id":"combo-03","name":"电煮锅 + 微波炉：南瓜浓汤","tools":["pot","microwave"],"ing":["南瓜","牛奶"],"opt":["洋葱"],"pantry":["盐","黑胡椒","黄油"],"time":25,"tags":["汤","素","快手","低脂"],"steps":["南瓜切块，加水没过，微波高火 8 分钟至软透","用勺子压成泥，或盛出用料理机打细","锅里加黄油炒香洋葱碎","倒入南瓜泥和牛奶，小火煮 5 分钟","调盐和黑胡椒，煮到浓稠能挂勺"]}];
+
+let RECIPES = [...FALLBACK_RECIPES];
+
+/** 联网拉取最新菜谱，失败自动回退到内置兜底 */
+async function loadRemoteRecipes() {
+  try {
+    if (!RECIPES_JSON_URL || RECIPES_JSON_URL.includes("在这里填入")) {
+      console.log("未配置远程菜谱地址，使用本地兜底");
+      return false;
+    }
+    const resp = await fetch(RECIPES_JSON_URL, { cache: "no-cache" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const remoteList = await resp.json();
+    if (Array.isArray(remoteList) && remoteList.length > 0) {
+      RECIPES = remoteList;
+      console.log(`✅加载远程菜谱成功，共${RECIPES.length}道`);
+      return true;
+    }
+  } catch (err) {
+    console.warn("⚠️远程菜谱加载失败，使用本地兜底菜谱", err);
+    RECIPES = [...FALLBACK_RECIPES];
+  }
+  return false;
+}
+
+const ING_BANK = {
+  '主食': ['大米', '小米', '面条', '红薯粉', '燕麦片', '剩米饭', '米饭', '面粉', '低筋面粉'],
+  '肉蛋': ['鸡蛋', '鸡翅中', '鸡腿', '鸡腿肉', '排骨', '牛腩', '牛排', '五花肉', '猪瘦肉', '腊肠', '培根', '火腿', '虾滑', '鱼丸', '午餐肉'],
+  '蔬菜': ['番茄', '土豆', '南瓜', '洋葱', '胡萝卜', '西葫芦', '彩椒', '青椒', '白菜', '娃娃菜', '青菜', '西兰花', '芦笋', '菠菜', '金针菇', '蘑菇', '豆腐', '萝卜', '魔芋结', '豆腐包', '海带结', '玉米', '莲藕', '山药', '黄瓜', '茄子', '豆角'],
+  '其他': ['苹果', '香蕉', '牛奶', '黄油', '猪油', '淡奶油', '蜂蜜', '花生米', '香醋', '可乐', '火锅底料', '辣椒油', '枸杞', '干辣椒', '芝士', '小番茄', '蛋挞皮', '奶粉'],
+  '调料': ['大蒜', '生姜', '小葱', '香菜']
+};
+
+const state = {
+  tools: ['microwave', 'rice', 'pot', 'oven'],
+  pantry: true,
+  ingredients: [],
+  banned: [],
+  favorites: [],
+  cooked: [],
+  customIngredients: [],
+  view: 'home',
+  tab: 'pick',
+  todayPick: null,
+  shuffleSeed: 0,
+  cookMode: false,
+  currentRecipe: null,
+  stepIndex: 0,
+  timer: null,
+  timerEndsAt: 0
+};
+
+let wakeLock = null;
+let tickHandle = null;
+let saveDebounceTimer = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch (err) {
+    console.warn('无法开启屏幕常亮', err);
+  }
+}
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try { await wakeLock.release(); } catch(e){}
+    wakeLock = null;
+  }
+}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('kitchen_v1'));
+    if (saved) Object.assign(state, saved);
+  } catch (e) {}
+  if (!Array.isArray(state.customIngredients)) state.customIngredients = [];
+  if (!state.tools.length) state.tools = ['microwave'];
+}
+
+function saveState() {
+  const persist = {
+    tools: state.tools,
+    pantry: state.pantry,
+    ingredients: state.ingredients,
+    banned: state.banned,
+    favorites: state.favorites,
+    cooked: state.cooked,
+    customIngredients: state.customIngredients,
+    timer: state.timer,
+    timerEndsAt: state.timerEndsAt
+  };
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(() => {
+    try {
+      localStorage.setItem('kitchen_v1', JSON.stringify(persist));
+    } catch (e) {
+      console.warn('保存本地状态失败', e);
+    }
+  }, 150);
+}
+
+function restoreTimer() {
+  if (state.timer && state.timerEndsAt && Date.now() < state.timerEndsAt) {
+    tickHandle = setInterval(tickTimer, 500);
+  } else {
+    stopTimer();
+  }
+}
+
+function stopTimer() {
+  if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+  state.timer = null;
+  state.timerEndsAt = 0;
+  saveState();
+}
+
+function startTimer(seconds, stepIdx) {
+  stopTimer();
+  state.timer = seconds;
+  state.timerEndsAt = Date.now() + seconds * 1000;
+  state.stepIndex = stepIdx;
+  tickHandle = setInterval(tickTimer, 500);
+  render();
+}
+
+function tickTimer() {
+  if (!state.timer) return;
+  if (Date.now() >= state.timerEndsAt) {
+    stopTimer();
+    alert('时间到！');
+    render();
+    return;
+  }
+  const bar = document.querySelector('.timer-bar');
+  if (bar) {
+    const left = Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000));
+    const n = bar.querySelector('.timer-num');
+    if (n) n.textContent = `${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+  }
+}
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+function esc(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function evaluate(recipe) {
+  const missingTools = recipe.tools.filter(t => !state.tools.includes(t));
+  const bannedHit = recipe.ing.filter(i => state.banned.includes(i));
+  const needed = recipe.ing;
+  const have = needed.filter(i => state.ingredients.includes(i));
+  const missing = needed.filter(i => !state.ingredients.includes(i));
+
+  let level = 'no';
+  if (missingTools.length === 0 && bannedHit.length === 0) {
+    if (missing.length === 0) level = 'ready';
+    else if (missing.length <= 3) level = 'almost';
+  }
+  const score = needed.length ? have.length / needed.length : 0;
+  return { ok: level !== 'no', level, have: have.length, total: needed.length,
+    missing, missingTools, bannedHit, score };
+}
+
+function gapLabel(res) {
+  if (res.level === 'ready') return '现在就能做';
+  if (res.missing.length === 1) return '差 1 样';
+  if (res.missing.length === 2) return '差 2 样';
+  return `差 ${res.missing.length} 样`;
+}
+
+function matchAll(filterTools = true) {
+  return RECIPES.map(r => ({ recipe: r, res: evaluate(r) }))
+    .filter(x => !filterTools || x.res.missingTools.length === 0)
+    .filter(x => x.res.bannedHit.length === 0)
+    .filter(x => x.res.level !== 'no')
+    .sort((a, b) => {
+      const rank = { ready: 0, almost: 1 };
+      if (rank[a.res.level] !== rank[b.res.level]) return rank[a.res.level] - rank[b.res.level];
+      if (b.res.score !== a.res.score) return b.res.score - a.res.score;
+      return a.recipe.time - b.recipe.time;
+    });
+}
+
+function pickToday(excludeId) {
+  const pool = matchAll(true);
+  if (!pool.length) return null;
+  const cookedRecent = state.cooked.slice(-6);
+  const notRecent = r => !cookedRecent.includes(r.id) && r.id !== excludeId;
+
+  const buckets = [
+    pool.filter(x => x.res.level === 'ready' && notRecent(x.recipe)),
+    pool.filter(x => x.res.level === 'ready'),
+    pool.filter(x => x.res.level === 'almost' && x.res.missing.length <= 1 && notRecent(x.recipe)),
+    pool.filter(x => x.res.level === 'almost')
+  ];
+  const pickFrom = buckets.find(b => b.length) || pool;
+
+  const daySeed = Math.floor(Date.now() / 86400000);
+  const idx = (daySeed + state.shuffleSeed) % pickFrom.length;
+  state.shuffleSeed = (state.shuffleSeed + 1) % 97;
+  return pickFrom[idx].recipe;
+}
+
+// 支持分钟/秒两种时间格式，秒自动转分钟
+function extractMinutes(step) {
+  const minMatch = step.match(/(\d+)\s*分钟/);
+  if (minMatch) return parseInt(minMatch[1], 10);
+  const secMatch = step.match(/(\d+)\s*秒/);
+  if (secMatch) return Math.ceil(parseInt(secMatch[1], 10) / 60);
+  return null;
+}
+
+function heroCard(r) {
+  const res = evaluate(r);
+  const miss = res.missing.length
+    ? `<div class="hero-miss">缺 ${res.missing.map(m => `<i>${esc(m)}</i>`).join('')}</div>`
+    : '';
+  return `
+  <section class="hero">
+    <div class="hero-label">今天就吃这个</div>
+    <h2 class="hero-name">${esc(r.name)}</h2>
+    <div class="hero-meta">
+      <span>${r.time} 分钟</span><span class="dot">·</span>
+      <span>${r.tools.map(t => TOOLS[t]).join(' + ')}</span>
+      <span class="badge ${res.level === 'ready' ? 'badge-ready' : 'badge-close'}">${gapLabel(res)}</span>
+    </div>
+    ${miss}
+    <div class="hero-acts">
+      <button class="btn-primary btn-lg" data-open="${r.id}">就这么做</button>
+      <button class="btn-ghost btn-lg" data-shuffle>换一道</button>
+    </div>
+  </section>`;
+}
+
+function emptyState() {
+  return `<div class="empty">
+    <div class="empty-icon">🥘</div>
+    <h3>没有可做的菜</h3>
+    <p>去「厨房」检查一下厨具设置</p>
+  </div>`;
+}
+
+function cardHTML({ recipe, res }) {
+  const miss = res.missing.length
+    ? `<div class="card-miss">缺 ${res.missing.map(m => `<i>${esc(m)}</i>`).join('')}</div>`
+    : '';
+  const cookedN = state.cooked.filter(id => id === recipe.id).length;
+
+  return `
+  <article class="card ${res.level}" data-open="${recipe.id}">
+    <div class="card-main">
+      <div class="card-top">
+        <h3>${esc(recipe.name)}</h3>
+        <span class="badge ${res.level === 'ready' ? 'badge-ready' : 'badge-close'}">${gapLabel(res)}</span>
+      </div>
+      <div class="card-meta">
+        <span>${recipe.time} 分钟</span>
+        <span class="dot">·</span>
+        <span>${recipe.tools.map(t => TOOLS[t]).join(' + ')}</span>
+        ${cookedN ? `<span class="dot">·</span><span class="cooked-n">做过 ${cookedN} 次</span>` : ''}
+      </div>
+      ${miss}
+    </div>
+    <button class="fav ${state.favorites.includes(recipe.id) ? 'on' : ''}" data-fav="${recipe.id}" aria-label="收藏">★</button>
+  </article>`;
+}
+
+function bottomNav(active) {
+  return `<nav class="bottom">
+    <button class="bn ${active === 'home' ? 'on' : ''}" data-nav="home"><span>🍳</span>找菜</button>
+    <button class="bn ${active === 'fav' ? 'on' : ''}" data-nav="fav"><span>★</span>收藏</button>
+    <button class="bn ${active === 'done' ? 'on' : ''}" data-nav="done"><span>✓</span>做过</button>
+    <button class="bn ${active === 'kitchen' ? 'on' : ''}" data-nav="kitchen"><span>🍽</span>厨房</button>
+  </nav>`;
+}
+
+function pickerModal() {
+  return `<div class="modal" id="picker" hidden>
+    <div class="modal-mask" data-close-picker></div>
+    <div class="modal-body">
+      <div class="modal-hd">
+        <h2>选择食材</h2>
+        <button class="icon-btn" data-close-picker aria-label="关闭">×</button>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="ing-search" placeholder="搜索食材，或直接输入后回车" autocomplete="off">
+      </div>
+      <div id="ing-groups">
+        ${Object.entries(ING_BANK).map(([cat, items]) => `
+          <div class="ing-group">
+            <h4>${esc(cat)}</h4>
+            <div class="chips">
+              ${items.map(i => `<button class="chip" data-add="${esc(i)}">${esc(i)}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+        ${state.customIngredients.length ? `
+        <div class="ing-group">
+          <h4>自定义添加</h4>
+          <div class="chips">
+            ${state.customIngredients.map(i => `<button class="chip" data-add="${esc(i)}">${esc(i)}</button>`).join('')}
+          </div>
+        </div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderHome() {
+  const results = matchAll(true);
+  const ready = results.filter(x => x.res.level === 'ready');
+  const almost = results.filter(x => x.res.level === 'almost');
+  const today = (state.todayPick ? RECIPES.find(r => r.id === state.todayPick) : null) || pickToday();
+  const quick = results.slice(0, 6);
+
+  return `
+  <header class="hd">
+    <div class="hd-row">
+      <div>
+        <h1>今天吃什么</h1>
+        <p class="sub">${state.ingredients.length ? `冰箱里有 ${state.ingredients.length} 样` : '没想好就直接点'}</p>
+      </div>
+      <button class="icon-btn" data-nav="kitchen" aria-label="厨房">⚙</button>
+    </div>
+  </header>
+
+  ${today ? heroCard(today) : ''}
+
+  <section class="sec">
+    <h2 class="sec-hd">实在懒得想 <span>${quick.length} 道</span></h2>
+    <div class="quick-row">
+      ${quick.map(x => `
+        <button class="quick-card" data-open="${x.recipe.id}">
+          <span class="quick-name">${esc(x.recipe.name.replace(/^(电饭煲|电煮锅|烤箱|微波炉)\s*[+＋]?\s*/, ''))}</span>
+          <span class="quick-meta">${x.recipe.time}′ · ${x.res.level === 'ready' ? '可做' : '差' + x.res.missing.length}</span>
+        </button>`).join('')}
+    </div>
+  </section>
+
+  <div class="picked-bar">
+    ${state.ingredients.length
+      ? state.ingredients.map(i => `
+        <button class="chip chip-on" data-remove="${esc(i)}">${esc(i)} <span>×</span></button>`).join('')
+      : '<span class="hint">冰箱里有什么？选一下推荐更准（不选也能用）</span>'}
+  </div>
+  <div class="quick-add">
+    <button class="btn-ghost" id="btn-add-ing">+ 冰箱里有</button>
+    ${state.ingredients.length ? '<button class="btn-ghost" id="btn-clear-ing">清空</button>' : ''}
+  </div>
+
+  <nav class="tabs">
+    <button class="tab ${state.tab === 'pick' ? 'on' : ''}" data-tab="pick">
+      推荐<span class="tab-n">${ready.length || results.length}</span>
+    </button>
+    <button class="tab ${state.tab === 'ready' ? 'on' : ''}" data-tab="ready">
+      现在能做<span class="tab-n">${ready.length}</span>
+    </button>
+    <button class="tab ${state.tab === 'almost' ? 'on' : ''}" data-tab="almost">
+      差一点<span class="tab-n">${almost.length}</span>
+    </button>
+  </nav>
+
+  <main class="list">
+    ${(() => {
+      const shown = state.tab === 'ready' ? ready
+        : state.tab === 'almost' ? almost
+        : ready.concat(almost);
+      return shown.length === 0 ? emptyState() : shown.map(cardHTML).join('');
+    })()}
+  </main>
+  <div class="spacer"></div>
+  ${bottomNav('home')}
+  ${pickerModal()}`;
+}
+
+function renderDetail() {
+  const r = state.currentRecipe;
+  if (!r) return renderHome();
+
+  if (state.cookMode) {
+    const i = state.stepIndex;
+    const total = r.steps.length;
+    const step = r.steps[i];
+    const mins = extractMinutes(step);
+    const last = i === total - 1;
+
+    return `
+    <div class="cook">
+      <div class="cook-top">
+        <button class="icon-btn" data-back aria-label="返回">‹</button>
+        <div class="cook-title">${esc(r.name)}</div>
+        <button class="icon-btn" data-fav="${r.id}" aria-label="收藏">${state.favorites.includes(r.id) ? '★' : '☆'}</button>
+      </div>
+      <div class="cook-prog">
+        ${r.steps.map((_, k) => `<span class="dot${k <= i ? ' on' : ''}"></span>`).join('')}
+      </div>
+      <div class="cook-body">
+        <div class="cook-step-n">第 ${i + 1} 步 / 共 ${total} 步</div>
+        <p class="cook-step">${esc(step)}</p>
+        ${mins ? `<button class="btn-timer-lg" data-timer="${mins}" data-step="${i}">⏱ 开始 ${mins} 分钟计时</button>` : ''}
+      </div>
+      <div class="cook-acts">
+        ${i > 0 ? `<button class="btn-step-prev" data-step-prev>上一步</button>` : ''}
+        ${last
+          ? `<button class="btn-step-next done" data-cook="${r.id}" data-back>做完了 ✓</button>`
+          : `<button class="btn-step-next" data-step-next>下一步</button>`}
+      </div>
+    </div>
+    ${timerBar()}`;
+  }
+
+  const res = evaluate(r);
+  const miss = res.missing.length
+    ? `<div class="alert">还缺 ${res.missing.map(m => `<i>${esc(m)}</i>`).join('')}</div>`
+    : '';
+
+  return `
+  <header class="hd detail-hd">
+    <div class="hd-row">
+      <button class="icon-btn" data-back aria-label="返回">‹</button>
+      <h1>${esc(r.name)}</h1>
+      <button class="icon-btn ${state.favorites.includes(r.id) ? 'on' : ''}" data-fav="${r.id}" aria-label="收藏">★</button>
+    </div>
+    <div class="detail-meta">
+      <span>${r.time} 分钟</span><span class="dot">·</span>
+      <span>${r.tools.map(t => TOOLS[t]).join(' + ')}</span>
+    </div>
+  </header>
+
+  ${miss}
+  <div class="detail-start">
+    <button class="btn-primary btn-lg" data-start-cook>开始做（${r.steps.length} 步）</button>
+  </div>
+
+  <div class="block">
+    <h3 class="block-hd">食材</h3>
+    <div class="ing-list">
+      ${r.ing.map(i => `
+        <div class="ing-row ${state.ingredients.includes(i) ? 'have' : ''}">
+          <span class="mark">${state.ingredients.includes(i) ? '✓' : '○'}</span>
+          <span class="ing-name">${esc(i)}</span>
+        </div>`).join('')}
+      ${r.opt.length ? `<div class="ing-sub">选配（有更好，没有也能做）</div>
+        ${r.opt.map(i => `<div class="ing-row opt"><span class="mark">·</span><span class="ing-name">${esc(i)}</span></div>`).join('')}` : ''}
+      ${r.pantry.length ? `<div class="ing-sub">调味品（家里应该都有）</div>
+        ${r.pantry.map(i => `<div class="ing-row pantry"><span class="mark">·</span><span class="ing-name">${esc(i)}</span></div>`).join('')}` : ''}
+    </div>
+  </div>
+
+  <div class="block">
+    <h3 class="block-hd">步骤</h3>
+    <ol class="steps">
+      ${r.steps.map((s, i) => {
+        const mins = extractMinutes(s);
+        return `<li class="step" data-step="${i}">
+          <span class="step-n">${i + 1}</span>
+          <div class="step-body">
+            <p>${esc(s)}</p>
+            ${mins ? `<button class="timer-btn" data-timer="${mins}" data-step="${i}">⏱ ${mins} 分钟倒计时</button>` : ''}
+          </div>
+        </li>`;
+      }).join('')}
+    </ol>
+  </div>
+  <div class="spacer"></div>
+  ${bottomNav('home')}
+  ${timerBar()}`;
+}
+
+function timerBar() {
+  if (!state.timer) return '';
+  const left = Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000));
+  const m = String(Math.floor(left / 60)).padStart(2, '0');
+  const s = String(left % 60).padStart(2, '0');
+  return `<div class="timer-bar">
+    <span class="timer-label">⏱ 倒计时</span>
+    <span class="timer-num">${m}:${s}</span>
+    <button class="btn-timer-stop" data-stop-timer>取消</button>
+  </div>`;
+}
+
+function renderFav() {
+  const items = RECIPES.filter(r => state.favorites.includes(r.id)).map(r => ({ recipe: r, res: evaluate(r) }));
+  return `
+  <header class="hd"><h1>收藏的菜</h1><p class="sub">${items.length} 道</p></header>
+  <main class="list">
+    ${items.length ? items.map(cardHTML).join('')
+      : `<div class="empty"><div class="empty-icon">★</div><h3>还没有收藏</h3><p>在菜谱右上角点星标收藏</p></div>`}
+  </main>
+  <div class="spacer"></div>${bottomNav('fav')}`;
+}
+
+function renderDone() {
+  const items = state.cooked.map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
+  const byCount = {};
+  items.forEach(r => { byCount[r.name] = (byCount[r.name] || 0) + 1; });
+  const stats = Object.entries(byCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  return `
+  <header class="hd"><h1>做过什么</h1><p class="sub">共 ${items.length} 次</p></header>
+  <main class="list">
+    ${stats.length ? `<div class="block">
+      <h3 class="block-hd">做得最多</h3>
+      <div class="stat-row">${stats.map(([n, c]) => `
+        <div class="stat"><span class="stat-n">${c}</span><span class="stat-l">${esc(n)}</span></div>`).join('')}</div>
+    </div>` : ''}
+    ${items.length ? items.map(r => `
+      <article class="card ready" data-open="${r.id}">
+        <div class="card-main">
+          <div class="card-top"><h3>${esc(r.name)}</h3></div>
+          <div class="card-meta"><span>${r.time} 分钟</span><span class="dot">·</span><span>${r.tools.map(t => TOOLS[t]).join(' + ')}</span></div>
+        </div>
+        <button class="icon-btn subtle" data-uncook="${r.id}" aria-label="移除">×</button>
+      </article>`).join('')
+      : `<div class="empty"><div class="empty-icon">🍳</div><h3>还没有记录</h3><p>做完菜在最后一步点「做完了」</p></div>`}
+  </main>
+  <div class="spacer"></div>${bottomNav('done')}`;
+}
+
+function renderKitchen() {
+  return `
+  <header class="hd"><h1>我的厨房</h1><p class="sub">设备决定哪些菜会出现</p></header>
+  <main class="list">
+    <div class="block">
+      <h3 class="block-hd">我的厨具</h3>
+      ${Object.entries(TOOLS).map(([k, name]) => `
+        <label class="tool-row">
+          <input type="checkbox" data-tool="${k}" ${state.tools.includes(k) ? 'checked' : ''}>
+          <span class="tool-name">${name}</span>
+          <span class="tool-hint">${RECIPES.filter(r => r.tools.includes(k)).length} 道菜</span>
+        </label>`).join('')}
+      <p class="note">取消勾选后，需要该设备的菜谱会从「今天吃什么」里消失。</p>
+    </div>
+
+    <div class="block">
+      <h3 class="block-hd">不吃的（忌口）</h3>
+      <div class="chips" id="banned-chips">
+        ${ING_BANK['肉蛋'].concat(ING_BANK['蔬菜']).filter((v, i, a) => a.indexOf(v) === i)
+          .map(i => `<button class="chip ${state.banned.includes(i) ? 'chip-ban' : ''}" data-ban="${esc(i)}">${esc(i)}</button>`).join('')}
+      </div>
+      <p class="note">标记后，含该食材的菜谱会被完全隐藏。</p>
+    </div>
+
+    <div class="block">
+      <h3 class="block-hd">数据</h3>
+      <div class="data-acts">
+        <button class="btn-ghost" id="btn-export">导出我的设置</button>
+        <button class="btn-ghost" id="btn-import">导入设置文件</button>
+        <button class="btn-ghost" id="btn-refresh-recipes">刷新最新菜谱</button>
+        <button class="btn-ghost danger" id="btn-reset">清空所有数据</button>
+      </div>
+      <p class="note">当前共 ${RECIPES.length} 道菜谱，点击「刷新最新菜谱」可同步服务器更新。</p>
+    </div>
+  </main>
+  <div class="spacer"></div>${bottomNav('kitchen')}`;
+}
+
+function render() {
+  const app = $('#app');
+  const scroll = window.scrollY;
+  const pickerOpen = (() => {
+    const p = document.getElementById('picker');
+    return p && !p.hidden;
+  })();
+  const searchVal = (() => {
+    const s = document.getElementById('ing-search');
+    return s ? s.value : '';
+  })();
+
+  let html;
+  if (state.view === 'detail') html = renderDetail();
+  else if (state.view === 'fav') html = renderFav();
+  else if (state.view === 'done') html = renderDone();
+  else if (state.view === 'kitchen') html = renderKitchen();
+  else html = renderHome();
+  app.innerHTML = html;
+
+  if (state.view !== 'detail' && !state.cookMode) window.scrollTo(0, scroll);
+
+  if (pickerOpen && state.view === 'home') {
+    const p = document.getElementById('picker');
+    if (p) {
+      p.hidden = false;
+      const s = document.getElementById('ing-search');
+      if (s) {
+        s.value = searchVal;
+        if (document.activeElement !== s) s.focus();
+      }
+    }
+  }
+
+  if (state.timer) tickTimer();
+}
+
+function exportData() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    tools: state.tools.map(t => TOOLS[t]),
+    ingredients: state.ingredients,
+    banned: state.banned,
+    customIngredients: state.customIngredients,
+    favorites: state.favorites.map(id => (RECIPES.find(r => r.id === id) || {}).name),
+    cooked: state.cooked.map(id => (RECIPES.find(r => r.id === id) || {}).name)
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `厨房菜谱-我的设置-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      if (!Array.isArray(json.ingredients) || !Array.isArray(json.tools)) {
+        alert('文件格式不正确，不是本应用导出的配置');
+        return;
+      }
+      if (!confirm('导入会覆盖当前全部设置，确定继续？')) return;
+      const toolNameToKey = Object.fromEntries(Object.entries(TOOLS).map(([k, v]) => [v, k]));
+      state.tools = (json.tools || []).map(name => toolNameToKey[name]).filter(Boolean);
+      state.ingredients = json.ingredients || [];
+      state.banned = json.banned || [];
+      state.customIngredients = json.customIngredients || [];
+      alert('导入完成；收藏、做过记录因技术限制不会导入，请手动标记。');
+      saveState();
+      render();
+    } catch (err) {
+      console.error(err);
+      alert('导入失败：文件损坏或格式错误');
+    }
+  };
+  input.click();
+}
+
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-add],[data-remove],[data-tab],[data-open],[data-fav],[data-nav],[data-back],[data-cook],[data-uncook],[data-ban],[data-close-picker],[data-timer],[data-stop-timer],[data-shuffle],[data-start-cook],[data-step-next],[data-step-prev],#btn-add-ing,#btn-clear-ing,#btn-export,#btn-import,#btn-refresh-recipes,#btn-reset');
+  if (!t) return;
+
+  if (t.hasAttribute('data-shuffle')) {
+    const next = pickToday(state.todayPick);
+    if (next) {
+      state.todayPick = next.id;
+      state.shuffleSeed++;
+    }
+    render();
+  } else if (t.hasAttribute('data-start-cook')) {
+    state.cookMode = true;
+    state.stepIndex = 0;
+    acquireWakeLock();
+    render();
+  } else if (t.hasAttribute('data-step-next')) {
+    state.stepIndex = Math.min(state.stepIndex + 1, state.currentRecipe.steps.length - 1);
+    render();
+  } else if (t.hasAttribute('data-step-prev')) {
+    state.stepIndex = Math.max(state.stepIndex - 1, 0);
+    render();
+  } else if (t.hasAttribute('data-add')) {
+    const i = t.dataset.add;
+    if (!state.ingredients.includes(i)) state.ingredients.push(i);
+    render();
+  } else if (t.hasAttribute('data-remove')) {
+    state.ingredients = state.ingredients.filter(x => x !== t.dataset.remove);
+    render();
+  } else if (t.id === 'btn-clear-ing') {
+    state.ingredients = [];
+    render();
+  } else if (t.dataset.tab) {
+    state.tab = t.dataset.tab;
+    render();
+  } else if (t.dataset.open) {
+    state.currentRecipe = RECIPES.find(r => r.id === t.dataset.open);
+    state.view = 'detail';
+    state.cookMode = false;
+    state.stepIndex = 0;
+    render();
+    window.scrollTo(0, 0);
+  } else if (t.dataset.back !== undefined) {
+    stopTimer();
+    if (state.cookMode) releaseWakeLock();
+    if (t.dataset.cook) {
+      if (!state.cooked.includes(t.dataset.cook)) state.cooked.push(t.dataset.cook);
+      state.cookMode = false;
+      state.view = 'home';
+      state.currentRecipe = null;
+    } else if (state.cookMode) {
+      state.cookMode = false;
+      state.stepIndex = 0;
+    } else {
+      state.view = 'home';
+      state.currentRecipe = null;
+    }
+    render();
+  } else if (t.dataset.fav) {
+    const id = t.dataset.fav;
+    state.favorites = state.favorites.includes(id)
+      ? state.favorites.filter(x => x !== id) : state.favorites.concat(id);
+    render();
+  } else if (t.dataset.nav) {
+    stopTimer();
+    releaseWakeLock();
+    state.cookMode = false;
+    state.view = t.dataset.nav;
+    render();
+    window.scrollTo(0, 0);
+  } else if (t.dataset.uncook) {
+    state.cooked = state.cooked.filter(x => x !== t.dataset.uncook);
+    render();
+  } else if (t.dataset.ban) {
+    const i = t.dataset.ban;
+    state.banned = state.banned.includes(i)
+      ? state.banned.filter(x => x !== i) : state.banned.concat(i);
+    render();
+  } else if (t.hasAttribute('data-close-picker')) {
+    $('#picker').hidden = true;
+  } else if (t.id === 'btn-add-ing') {
+    $('#picker').hidden = false;
+    const s = $('#ing-search'); if (s) { s.value = ''; s.focus(); }
+  } else if (t.dataset.timer) {
+    startTimer(parseInt(t.dataset.timer, 10) * 60, parseInt(t.dataset.step, 10));
+  } else if (t.hasAttribute('data-stop-timer')) {
+    stopTimer();
+    render();
+  } else if (t.id === 'btn-export') {
+    exportData();
+  } else if (t.id === 'btn-import') {
+    await importData();
+  } else if (t.id === 'btn-refresh-recipes') {
+    const old = RECIPES.length;
+    const ok = await loadRemoteRecipes();
+    alert(ok ? `刷新完成：当前共 ${RECIPES.length} 道菜谱` : '远程加载失败，仍使用本地兜底菜谱');
+    render();
+  } else if (t.id === 'btn-reset') {
+    if (confirm('确定清空所有数据？食材、收藏、做过记录都会删掉，无法恢复。')) {
+      localStorage.removeItem('kitchen_v1');
+      location.reload();
+    }
+  }
+
+  saveState();
+});
+
+document.addEventListener('change', e => {
+  if (e.target.dataset.tool) {
+    const k = e.target.dataset.tool;
+    state.tools = e.target.checked ? state.tools.concat(k) : state.tools.filter(x => x !== k);
+    if (!state.tools.length) { state.tools = [k]; e.target.checked = true; alert('至少保留一个设备'); }
+    saveState();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const p = $('#picker');
+    if (p && !p.hidden) p.hidden = true;
+    else if (state.view === 'detail') {
+      stopTimer();
+      state.view = 'home';
+      state.currentRecipe = null;
+      render();
+    }
+  }
+  if (e.key === 'Enter') {
+    const s = $('#ing-search');
+    if (s && s.value.trim() && $('#picker') && !$('#picker').hidden) {
+      const v = s.value.trim();
+      if (!state.ingredients.includes(v)) state.ingredients.push(v);
+      if (!state.customIngredients.includes(v)) state.customIngredients.push(v);
+      s.value = '';
+      saveState();
+      render();
+      const el = $('#ing-search'); if (el) el.focus();
+    }
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id !== 'ing-search') return;
+  const q = e.target.value.trim().toLowerCase();
+  $$('#ing-groups .chip').forEach(c => {
+    const show = !q || c.dataset.add.toLowerCase().includes(q);
+    c.style.display = show ? '' : 'none';
+  });
+  $$('#ing-groups .ing-group').forEach(g => {
+    const any = Array.from(g.querySelectorAll('.chip')).some(c => c.style.display !== 'none');
+    g.style.display = any ? '' : 'none';
+  });
+});
+
+/* ---------------- 启动 ---------------- */
+(async function bootstrap() {
+  loadState();
+  restoreTimer();
+  const app = $('#app');
+  app.innerHTML = `<div style="padding:40px;text-align:center;font-size:16px;color:#9C9188;">🥘 正在加载菜谱...</div>`;
+  await loadRemoteRecipes();
+  render();
+})();
+</script>
+</body>
+</html>
